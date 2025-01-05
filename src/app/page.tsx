@@ -43,7 +43,7 @@ const Home = () => {
       </div>
 
       <section className="max-w-7xl mx-auto px-4 mb-12">
-        <h1 className="text-center text-5xl font-semibold mb-6">How does it work?</h1>
+        <h1 className="text-center text-5xl font-semibold mb-6">How does it works?</h1>
         <p className="text-center mb-12">
           Amet minim mollit non deserunt ullamco est sit aliqua dolor do amet sint. Velit officia consequat duis.
         </p>

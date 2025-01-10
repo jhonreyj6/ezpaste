@@ -117,8 +117,8 @@ const Navbar = () => {
                       <DropdownMenuContent align="end" className="w-40">
                         <DropdownMenuLabel>My Account</DropdownMenuLabel>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem>
-                          <Link href={"/profile"}>Profile</Link>
+                        <DropdownMenuItem className="cursor-pointer" onClick={() => redirect("/profile")}>
+                          Profile
                         </DropdownMenuItem>
                         <DropdownMenuItem>Billing</DropdownMenuItem>
                         <DropdownMenuItem>Subscription</DropdownMenuItem>

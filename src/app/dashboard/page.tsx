@@ -44,7 +44,7 @@ const Dashboard = () => {
 
   return (
     <>
-      <div className="max-w-5xl mx-auto px-8 pt-8">
+      <div className="max-w-7xl mx-auto px-8 pt-8">
         <div className="flex flex-row gap-8">
           <div className="w-full">
             <DataTable columns={column} data={paste.data} />
@@ -52,6 +52,7 @@ const Dashboard = () => {
               <Paginate data={paste} />
             </div>
           </div>
+          <div className="w-[400px]"></div>
         </div>
       </div>
 

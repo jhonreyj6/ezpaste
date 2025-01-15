@@ -6,6 +6,7 @@ import { fetchData } from "@/lib/utils";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import Notifications from "@/components/notification";
+import Ads from "@/components/ads";
 
 const Bookmark = () => {
   const [pageState, setPageState] = useState(false);
@@ -52,7 +53,9 @@ const Bookmark = () => {
               <Paginate data={bookmarks} />
             </div>
 
-            <div className="w-[400px]">s</div>
+            <div className="w-[400px]">
+              <Ads />
+            </div>
           </div>
         </div>
       )}

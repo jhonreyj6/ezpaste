@@ -1,5 +1,6 @@
 "use client";
 
+import Ads from "@/components/ads";
 import Paginate from "@/components/paginate";
 import Post from "@/components/post";
 import { fetchData } from "@/lib/utils";
@@ -32,7 +33,9 @@ const Trending = () => {
                 return <Post data={post} key={index} action={setPaste} />;
               })}
             </div>
-            <div className="w-[500px]">s</div>
+            <div className="w-[400px]">
+              <Ads />
+            </div>
           </div>
 
           <Paginate data={paste} />

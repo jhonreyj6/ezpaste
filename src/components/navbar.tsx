@@ -117,7 +117,10 @@ const Navbar = () => {
                       <DropdownMenuContent align="end" className="w-40">
                         <DropdownMenuLabel>My Account</DropdownMenuLabel>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem className="cursor-pointer" onClick={() => redirect("/profile")}>
+                        <DropdownMenuItem
+                          className="cursor-pointer"
+                          onClick={() => redirect(`/profile?id=${auth.user.id}`)}
+                        >
                           Profile
                         </DropdownMenuItem>
                         <DropdownMenuItem>Billing</DropdownMenuItem>

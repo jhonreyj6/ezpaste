@@ -19,6 +19,10 @@ const useUserStore = create(
           access_token: "",
           isAuthenticated: false,
         })),
+      updateUser: (data) =>
+        set((state) => ({
+          user: data,
+        })),
     }),
     {
       name: "auth-storage", // Storage key in localStorage

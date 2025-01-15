@@ -2,7 +2,7 @@
 
 import { fetchData } from "@/lib/utils";
 import useUserStore from "@/stores/userStore";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -20,6 +20,9 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import PaginateShowMore from "@/components/paginate-show-more";
+import Link from "next/link";
+import Ads from "@/components/ads";
 
 const ClientContent = () => {
   const params = useSearchParams();
@@ -38,6 +41,8 @@ const ClientContent = () => {
     message: "",
   });
 
+  const input_comment = useRef<HTMLTextAreaElement>(null);
+
   const getPaste = async () => {
     const res = await fetchData(`api/paste/${params.get("id")}?password=${password}`, {});
     setPaste(res);
@@ -45,11 +50,21 @@ const ClientContent = () => {
     setPageState(true);
   };
 
-  const createComment = async () => {
+  const createComment = async (e) => {
+    e.target.disabled = true;
+
     const res = await fetchData(`api/paste/comment`, {
       body: JSON.stringify(form),
       method: "POST",
     });
+
+    setComments((prevState) => ({
+      ...prevState,
+      data: [res, ...prevState.data],
+    }));
+
+    e.target.disabled = false;
+    input_comment.current.value = null;
   };
 
   const createLike = async () => {
@@ -127,10 +142,60 @@ const ClientContent = () => {
     setIsCommentShown(true);
   };
 
-  const commentLikes = async () => {
-    const res = await fetchData(`api/paste/comment/likes`, {});
+  const createCommentLikes = async (comment) => {
+    const res = await fetchData(`api/paste/comment/like`, {
+      method: "POST",
+      body: JSON.stringify({ id: comment.id }),
+    });
 
-    setComments(res);
+    if (res) {
+      const new_data = comments.data.map((prev) => {
+        if (prev.id == comment.id && res == "success") {
+          prev.likes_by_auth = 1;
+          prev.likes_count = prev.likes_count + 1;
+        }
+
+        if (prev.id == comment.id && res == "deleted") {
+          prev.likes_by_auth = 0;
+          prev.likes_count = prev.likes_count - 1;
+        }
+
+        return prev;
+      });
+
+      setComments((prevState) => ({
+        ...prevState,
+        data: new_data,
+      }));
+    }
+  };
+
+  const createCommentUnLikes = async (comment) => {
+    const res = await fetchData(`api/paste/comment/unlike`, {
+      method: "POST",
+      body: JSON.stringify({ id: comment.id }),
+    });
+
+    if (res) {
+      const new_data = comments.data.map((prev) => {
+        if (prev.id == comment.id && res == "success") {
+          prev.unLikes_by_auth = 1;
+          prev.unLikes_count = prev.unLikes_count + 1;
+        }
+
+        if (prev.id == comment.id && res == "deleted") {
+          prev.unLikes_by_auth = 0;
+          prev.unLikes_count = prev.unLikes_count - 1;
+        }
+
+        return prev;
+      });
+
+      setComments((prevState) => ({
+        ...prevState,
+        data: new_data,
+      }));
+    }
   };
 
   const sendReport = async () => {
@@ -143,6 +208,10 @@ const ClientContent = () => {
   useEffect(() => {
     getPaste();
   }, []);
+
+  // useEffect(() => {
+  //   console.log(comments);
+  // }, [comments]);
 
   return (
     <>
@@ -241,29 +310,56 @@ const ClientContent = () => {
                             <div className="border p-4 rounded-lg mb-2" key={comment.id}>
                               <div className="flex gap-2 items-center justify-between">
                                 <h1 className="text-lg text-blue-500 hover:underline cursor-pointer">
-                                  {comment.user.name}
+                                  <Link href={`/profile?id=${comment.user.id}`}>{comment.user?.name}</Link>
                                 </h1>
                                 <div className="text-xs text-gray-400">{comment.created_at}</div>
                               </div>
                               <div className="mb-2">{comment.message}</div>
                               <div className="flex gap-4">
                                 <div className="flex flex-row gap-2 items-center">
-                                  <span>2</span>
-                                  <span className="material-icons !text-base text-gray-400">thumb_up</span>
+                                  <span>{comment.likes_count}</span>
+                                  <span
+                                    className={
+                                      "material-icons !text-base cursor-pointer " +
+                                      (comment.likes_by_auth ? "text-blue-500" : "text-gray-400")
+                                    }
+                                    onClick={() => {
+                                      createCommentLikes(comment);
+                                    }}
+                                  >
+                                    thumb_up
+                                  </span>
                                 </div>
                                 <div className="flex flex-row gap-2 items-center">
-                                  <span>2</span>
-                                  <span className="material-icons !text-base text-gray-400">thumb_down</span>
+                                  <span>{comment.unLikes_count}</span>
+                                  <span
+                                    className={
+                                      "material-icons !text-base cursor-pointer " +
+                                      (comment.unLikes_by_auth ? "text-blue-500" : "text-gray-400")
+                                    }
+                                    onClick={(e) => {
+                                      createCommentUnLikes(comment);
+                                    }}
+                                  >
+                                    thumb_down
+                                  </span>
                                 </div>
-                                <div className="flex flex-row gap-2 items-center">
+                                {/* <div className="flex flex-row gap-2 items-center">
                                   <span>2</span>
                                   <span className="material-icons !text-base text-gray-400">mark_unread_chat_alt</span>
-                                </div>
+                                </div> */}
                               </div>
                             </div>
                           );
                         })}
-                        <Paginate data={comments} />
+
+                        <div className="mt-4">
+                          <PaginateShowMore
+                            url={comments.next_page_url + `&paste_id=` + params.get("id")}
+                            state={comments}
+                            updateState={setComments}
+                          />
+                        </div>
                       </div>
                     )}
 
@@ -283,25 +379,35 @@ const ClientContent = () => {
                     )}
                   </div>
 
-                  <div className="grid w-full gap-2 border rounded-lg p-4">
-                    <h1 className="text-2xl border-b pb-2 mb-2">Post a comment</h1>
-                    <Textarea
-                      placeholder="Type your comment..."
-                      rows={6}
-                      className="mb-4"
-                      onKeyUp={(e) => {
-                        setForm((prevState) => ({
-                          ...prevState,
-                          message: e.target.value,
-                        }));
-                      }}
-                    />
-                    <Button className="w-40" onClick={createComment}>
-                      Create comment
-                    </Button>
-                  </div>
+                  {isCommentShown && (
+                    <div className="grid w-full gap-2 border rounded-lg p-4">
+                      <h1 className="text-2xl border-b pb-2 mb-2">Post a comment</h1>
+                      <Textarea
+                        placeholder="Type your comment..."
+                        ref={input_comment}
+                        rows={6}
+                        className="mb-4"
+                        onKeyUp={(e) => {
+                          setForm((prevState) => ({
+                            ...prevState,
+                            message: e.target.value,
+                          }));
+                        }}
+                      />
+                      <Button
+                        className="w-40"
+                        onClick={(e) => {
+                          createComment(e);
+                        }}
+                      >
+                        Create comment
+                      </Button>
+                    </div>
+                  )}
                 </div>
-                <div className="w-[420px]">s</div>
+                <div className="w-[400px]">
+                  <Ads />
+                </div>
               </div>
             </>
           )}

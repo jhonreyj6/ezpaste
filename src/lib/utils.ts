@@ -8,8 +8,8 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export async function fetchData(pathname: string, options: object) {
-  const url = `${BASE_API_URL}/${pathname}`;
+export async function fetchData(pathname: string, options: object, base_url = true) {
+  const url = base_url ? `${BASE_API_URL}/${pathname}` : `${pathname}`;
   const auth = useUserStore.getState();
 
   const defaultOptions = {
